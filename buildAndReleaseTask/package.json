@@ -1,0 +1,37 @@
+{
+  "name": "buildandreleasetask",
+  "version": "1.0.0",
+  "description": "ADO Extension for Scribe Replication Deployment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wase932/ScribeADOExtension.git"
+  },
+  "keywords": [
+    "AzureDevOps",
+    "Extension",
+    "Scribe",
+    "Ts",
+    "Js",
+    "Automation"
+  ],
+  "author": "Tolu Adepoju",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wase932/ScribeADOExtension/issues"
+  },
+  "homepage": "https://github.com/wase932/ScribeADOExtension#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "azure-pipelines-task-lib": "^2.9.3"
+  },
+  "devDependencies": {
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.11.0",
+    "@types/q": "^1.5.2",
+    "sync-request": "^6.1.0"
+  }
+}
