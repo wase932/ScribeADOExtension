@@ -1,128 +1,142 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var axios = require('axios').default;
-var scribe_user = String(process.env.scribe_user);
-var scribe_password = String(process.env.scribe_password);
-var baseUrl = String(process.env.scribe_baseurl);
-var organizationId = Number(process.env.scribe_organizationid);
-var connectionId = String(process.env.scribe_connectionid);
-var agentId = String(process.env.scribe_agentid);
-function testConnection(baseUrl, organizationId, connectionId, agentId, scribe_user, scribe_password) {
+const axios = require('axios').default;
+const tl = require("azure-pipelines-task-lib/task");
+const input_1 = require("../utility/input");
+const scribe_user = input_1.getInput("scribeUsername", true);
+const scribe_password = input_1.getInput("scribePassword", true);
+const scribe_organizationId = Number(input_1.getInput("scribeOrganizationId", true));
+const scribe_baseUrl = input_1.getInput("scribeBaseurl", true);
+const testConnectionName = input_1.getInput("testConnectionName", false);
+const sleep = (ms) => new Promise((r, j) => setTimeout(r, ms));
+async function startConnectionTestAsync(connectionId, agentId) {
     console.log("INFO: Testing connection...");
-    var uri = baseUrl + "/" + organizationId + "/connections/" + connectionId + "/test?agentid=" + agentId;
-    //Make an api call:
-    axios({
-        method: "POST",
-        url: uri,
-        auth: {
-            username: scribe_user,
-            password: scribe_password
-        }
-    }).then(function (response) {
-        console.log("INFO: Test started.");
-        console.log("INFO: Test id is " + response.data.id);
-        console.log("INFO.Status: " + response.data.status);
-        //Begin call to get results:
-        fetchResult(baseUrl, organizationId, response.data.id, scribe_user, scribe_password);
-    }).catch(function (error) {
-        console.log(error.message);
-        // handle error
-        console.log(error);
-    }).finally(function () {
-        // always executed
-    });
+    const uri = scribe_baseUrl + "/" + scribe_organizationId + "/connections/" + connectionId + "/test?agentid=" + agentId;
+    try {
+        const response = await axios({
+            method: "POST",
+            url: uri,
+            auth: {
+                username: scribe_user,
+                password: scribe_password
+            }
+        });
+        console.log(response.data);
+        return response.data.id;
+    }
+    catch (error) {
+        console.error(error);
+        process.exit(1);
+    }
 }
-function fetchResult(baseUrl, organizationId, testId, scribe_user, scribe_password, attemptCount) {
-    if (attemptCount === void 0) { attemptCount = 0; }
+exports.startConnectionTestAsync = startConnectionTestAsync;
+async function getConnectionTestResultAsync(testId, delay = 5000) {
     console.log("INFO: Fetching connection test result...");
-    var uri = baseUrl + "/" + organizationId + "/connections/test/" + testId;
-    axios({
-        method: "GET",
-        url: uri,
-        auth: {
-            username: scribe_user,
-            password: scribe_password
+    const uri = scribe_baseUrl + "/" + scribe_organizationId + "/connections/test/" + testId;
+    let result = new ConnectionTestResult();
+    try {
+        //console.log(`waiting for ${delay/1000} seconds before fetching result.....`);
+        await sleep(delay);
+        let response = await axios({
+            method: "GET",
+            url: uri,
+            auth: {
+                username: scribe_user,
+                password: scribe_password
+            }
+        });
+        console.log("Assigning Response data...");
+        while (response.data.status != "Completed") {
+            console.log(`Results not ready, trying again in ${delay / 1000} seconds`, response.data);
+            sleep(delay);
         }
-    }).then(function (response) {
-        console.log("INFO.Status: " + response.data.status);
-        //console.log(`INFO.Result: ${response.data}`);
-        // console.log(response);
-        //If the status is not completed, then try again...
-        //delay
-        setTimeout(function () {
-            if (response.data.status != "Completed") {
-                console.log("Result is still processing for id: " + testId + ". This is attempt " + attemptCount);
-                attemptCount += 1;
-                fetchResult(baseUrl, organizationId, response.data.id, scribe_user, scribe_password, attemptCount);
-            }
-            else {
-                console.log("INFO: Testing is now complete");
-                console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                console.log("RESULT: " + response.data.reply);
-                console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                //output the data in the response:
-                var responseData = response.data.replyData;
-                responseData.forEach(function (element) {
-                    console.log(element.key + " :: " + element.value);
-                });
-            }
-        }, 10000);
-        //Log status
-    }).catch(function (error) {
-        // handle error
-        console.log(error.message);
-    }).finally(function () {
-        // always executed
-    });
+        console.log("results ready................");
+        result.testId = testId,
+            result.status = response.data.status,
+            result.result = response.data.reply;
+        console.log("RESULT:", result);
+        return result;
+        // .then((response:any) => {
+        //     console.log(response.data);
+        //     result.testId = testId,
+        //     result.status = response.data.status,
+        //     result.result = response.data.reply;
+        // });
+        // if(result.status != "Completed"){
+        //     await getConnectionTestResultAsync(testId, delay);
+        // }
+        // else return result
+    }
+    catch (error) {
+        tl.error(error);
+        process.exit(1);
+    }
 }
-function getConnectionByName(connectionName, baseUrl, organizationId, scribe_user, scribe_password) {
-    console.log("INFO: Getting all connections...");
-    var uri = baseUrl + "/" + organizationId + "/connections";
-    axios({
-        method: "GET",
-        url: uri,
-        auth: {
-            username: scribe_user,
-            password: scribe_password
-        }
-    }).then(function (response) {
-        var responseData = response.data;
-        var match = responseData.filter(function (c) { return c.name.toLocaleLowerCase() === connectionName.toLowerCase(); });
-        if (match.length == 1) {
-            // console.log(match[0]);
-            console.log("SUCCESS: The id for " + connectionName + " is " + match[0].connectorId);
-            return match[0];
+exports.getConnectionTestResultAsync = getConnectionTestResultAsync;
+async function getAllConnectionsAsync() {
+    try {
+        console.log("INFO: Getting all connections...");
+        const uri = scribe_baseUrl + "/" + scribe_organizationId + "/connections";
+        const response = await axios({
+            method: "GET",
+            url: uri,
+            auth: {
+                username: scribe_user,
+                password: scribe_password
+            }
+        });
+        return response.data;
+    }
+    catch (error) {
+        console.error(error);
+        process.exit(1);
+    }
+    ;
+}
+exports.getAllConnectionsAsync = getAllConnectionsAsync;
+async function getConnectionByNameAsync(connectionName) {
+    //get all connections:
+    let allConnections = await getAllConnectionsAsync();
+    let match = allConnections.filter(c => c.name.toLocaleLowerCase() === connectionName.toLowerCase());
+    if (match.length > 0) {
+        console.log("Connection found");
+        return match[0];
+    }
+    else {
+        tl.setResult(tl.TaskResult.Failed, `Unable to find a connection named:${connectionName}`);
+        process.exit(1);
+    }
+}
+exports.getConnectionByNameAsync = getConnectionByNameAsync;
+async function testConnectionAsync(connectionName) {
+    try {
+        //get connection info:
+        let connectionInfo = await getConnectionByNameAsync(connectionName);
+        //start test:
+        let testId = await startConnectionTestAsync(connectionInfo.id, connectionInfo.lastTestedAgentId);
+        //fetch result:
+        let result = await getConnectionTestResultAsync(testId);
+        if (result.result == "SUCCESS") {
+            return true;
         }
         else {
-            console.log("ERROR: No Match found");
+            return false;
         }
-    }).then(function (data) {
-        //TEST the connection:
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        console.log(data.id);
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        testConnection(baseUrl, organizationId, data.id, data.lastTestedAgentId, scribe_user, scribe_password);
-    })
-        .catch(function (error) {
-        console.log(error.message);
-    }).finally(function () {
-    });
-    // let c = ConnectionInfo;
-    // let c = new ConnectionInfo;
+    }
+    catch (error) {
+        console.log(error);
+        tl.setResult(tl.TaskResult.Failed, `Unable to test connection named:${connectionName}`);
+        tl.error(error);
+        process.exit(1);
+    }
 }
-// testConnection(baseUrl, organizationId, connectionId, agentId, scribe_user, scribe_password);
-var conn = getConnectionByName("Guardian-Dynamics-Test-R1", baseUrl, organizationId, scribe_user, scribe_password);
-var ConnectionInfo = /** @class */ (function () {
-    function ConnectionInfo() {
-    }
-    return ConnectionInfo;
-}());
-var Connection = /** @class */ (function () {
-    function Connection() {
-    }
-    Connection.getConnectionByName = getConnectionByName;
-    Connection.testConnection = testConnection;
-    Connection.fetchResult = fetchResult;
-    return Connection;
-}());
-exports.Connection = Connection;
+exports.testConnectionAsync = testConnectionAsync;
+// testConnectionAsync(testConnectionName).then((x) => {
+// console.log("FINAL RESULT", x);
+// });
+class ConnectionInfo {
+}
+exports.ConnectionInfo = ConnectionInfo;
+class ConnectionTestResult {
+}
+exports.ConnectionTestResult = ConnectionTestResult;

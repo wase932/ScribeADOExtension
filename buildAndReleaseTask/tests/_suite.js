@@ -7,19 +7,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var path = __importStar(require("path"));
-var assert = __importStar(require("assert"));
-var ttm = __importStar(require("azure-pipelines-task-lib/mock-test"));
+const path = __importStar(require("path"));
+const assert = __importStar(require("assert"));
+const ttm = __importStar(require("azure-pipelines-task-lib/mock-test"));
 describe('Sample task tests', function () {
     before(function () {
     });
-    after(function () {
+    after(() => {
     });
     it('should succeed with simple inputs', function (done) {
         // Add success test here
         this.timeout(1000);
-        var tp = path.join(__dirname, 'success.js');
-        var tr = new ttm.MockTestRunner(tp);
+        let tp = path.join(__dirname, 'success.js');
+        let tr = new ttm.MockTestRunner(tp);
         tr.run();
         console.log(tr.succeeded);
         assert.equal(tr.succeeded, true, 'should have succeeded');
@@ -32,8 +32,8 @@ describe('Sample task tests', function () {
     it('it should fail if tool returns 1', function (done) {
         // Add failure test here
         this.timeout(1000);
-        var tp = path.join(__dirname, 'failure.js');
-        var tr = new ttm.MockTestRunner(tp);
+        let tp = path.join(__dirname, 'failure.js');
+        let tr = new ttm.MockTestRunner(tp);
         tr.run();
         console.log(tr.succeeded);
         assert.equal(tr.succeeded, false, 'should have failed');

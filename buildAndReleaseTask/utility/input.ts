@@ -12,6 +12,6 @@ export function getInput(name:string, isRequired:boolean = false):string {
     }
     catch(error) {
         tl.setResult(tl.TaskResult.Failed, error.message);
+        process.exit(1);
     }
-    return "";
 }
