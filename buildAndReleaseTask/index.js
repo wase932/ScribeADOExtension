@@ -7,56 +7,39 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const tl = require("azure-pipelines-task-lib/task");
 // import * as utility from './utility/input';
 const input_1 = require("./utility/input");
-const conn = __importStar(require("./connection/connection"));
+const conn = __importStar(require("./connection"));
+const sol = __importStar(require("./solution"));
 var actionOptions;
 (function (actionOptions) {
     actionOptions["testConnection"] = "testConnection";
     actionOptions["createSolution"] = "createSolution";
     actionOptions["deleteSolution"] = "deleteSolution";
     actionOptions["getConnectionEntities"] = "getConnectionEntities";
+    actionOptions["startSolution"] = "startSolution";
 })(actionOptions || (actionOptions = {}));
 ;
-const scribe_user = input_1.getInput("scribeUsername", true);
-const scribe_password = input_1.getInput("scribePassword", true);
-const scribe_organizationId = Number(input_1.getInput("scribeOrganizationId", true));
-const scribe_baseUrl = input_1.getInput("scribeBaseurl", true);
 const scribeAction = input_1.getInput("scribeAction", true);
-const sourceConnectionName = input_1.getInput("sourceConnectionName", false);
-const targetConnectionName = input_1.getInput("targetConnectionName", false);
-const testConnectionName = input_1.getInput("testConnectionName", false);
+const connectionName = input_1.getInput("connectionName", false);
+const solutionName = input_1.getInput("solutionName", false);
 const determineAction = async function (action) {
     switch (action) {
         case actionOptions.testConnection:
-            conn.testConnectionAsync(testConnectionName).then((x) => {
-                if (x) {
-                    tl.setResult(tl.TaskResult.Succeeded, `The ${testConnectionName} connection passed test.`);
-                }
-                else {
-                    tl.setResult(tl.TaskResult.Failed, `The ${testConnectionName} connection failed test.`);
-                }
-            });
+            conn.testConnectionAsync(connectionName);
             break;
         case actionOptions.createSolution:
-            createSolution();
+            sol.createSolution();
             break;
         case actionOptions.deleteSolution:
-            deleteSolution();
+            sol.deleteSolution(solutionName);
             break;
         case actionOptions.getConnectionEntities:
-            getConnectionEntities();
+            conn.getConnectionEntitiesAsync(connectionName);
+            break;
+        case actionOptions.startSolution:
+            sol.startSolutionByNameAsync(solutionName);
             break;
     }
 };
 determineAction(scribeAction);
-function createSolution() {
-    console.log("Creating a solution...");
-}
-function deleteSolution() {
-    console.log("Deleting a solution...");
-}
-function getConnectionEntities() {
-    console.log("Fetching entities of connection...");
-}

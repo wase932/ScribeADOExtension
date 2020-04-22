@@ -1,18 +1,21 @@
 const axios = require('axios').default;
 import tl = require('azure-pipelines-task-lib/task');
-import  { getInput }  from '../utility/input';
+import  { getInput }  from './utility/input';
+import * as uerror from './utility/error';
+import * as agent from './agent';
 
 const scribe_user = getInput("scribeUsername", true);
 const scribe_password = getInput("scribePassword", true);
 const scribe_organizationId = Number(getInput("scribeOrganizationId", true));
 const scribe_baseUrl = getInput("scribeBaseurl", true);
-const testConnectionName = getInput("testConnectionName", false);
+const connectionName = getInput("connectionName", false);
 
 const sleep = (ms:number) => new Promise((r, j)=>setTimeout(r, ms));
 
 export async function startConnectionTestAsync(connectionId:string, agentId:string):Promise<string>{
     console.log("INFO: Testing connection...");
     const uri:string = scribe_baseUrl+"/"+scribe_organizationId+"/connections/"+connectionId+"/test?agentid="+agentId;
+    console.log("Api path: ", uri);
 
     try {
         const response = await axios({
@@ -23,20 +26,20 @@ export async function startConnectionTestAsync(connectionId:string, agentId:stri
                 password: scribe_password
             }
         });
-        console.log(response.data);
+        console.log("Response:", response.data);
         return response.data.id;
     } catch (error) {
-        console.error(error);
+        uerror.CatchAxiosError(error);
+        tl.setResult(tl.TaskResult.Failed, error);
         process.exit(1);
     }
 }
 
-export async function getConnectionTestResultAsync(testId:string, delay:number = 5000): Promise<ConnectionTestResult>{
+export async function getConnectionTestResultAsync(testId:string, delay:number = 10000): Promise<ConnectionTestResult>{
     console.log("INFO: Fetching connection test result...");
     const uri:string = scribe_baseUrl+"/"+scribe_organizationId+"/connections/test/"+testId;
     let result = new ConnectionTestResult();
     try{
-        //console.log(`waiting for ${delay/1000} seconds before fetching result.....`);
         await sleep(delay);
         let response = await axios({
                                     method: "GET",
@@ -51,7 +54,7 @@ export async function getConnectionTestResultAsync(testId:string, delay:number =
             console.log(`Results not ready, trying again in ${delay/1000} seconds`, response.data);
             sleep(delay);
         }
-        console.log("results ready................");
+        console.log("results ready...");
 
         result.testId = testId,
         result.status = response.data.status,
@@ -59,21 +62,10 @@ export async function getConnectionTestResultAsync(testId:string, delay:number =
 
         console.log("RESULT:" ,result);
         return result;
-        // .then((response:any) => {
-        //     console.log(response.data);
-        //     result.testId = testId,
-        //     result.status = response.data.status,
-        //     result.result = response.data.reply;
-        // });
-
-        
-        // if(result.status != "Completed"){
-        //     await getConnectionTestResultAsync(testId, delay);
-        // }
-        // else return result
     }
     catch (error) {
-        tl.error(error);
+        uerror.CatchAxiosError(error);
+        tl.setResult(tl.TaskResult.Failed, error);
         process.exit(1);
     }
 }
@@ -94,7 +86,8 @@ export async function getAllConnectionsAsync(): Promise<Array<ConnectionInfo>>{
         return response.data;
     }
     catch(error) {
-        console.error(error);
+        uerror.CatchAxiosError(error);
+        tl.setResult(tl.TaskResult.Failed, error);
         process.exit(1);
     };
 }
@@ -117,6 +110,7 @@ export async function testConnectionAsync(connectionName:string):Promise<boolean
         //get connection info:
         let connectionInfo = await getConnectionByNameAsync(connectionName);
         //start test:
+        console.log("Connectio Info:::", connectionInfo);
         let testId = await startConnectionTestAsync(connectionInfo.id, connectionInfo.lastTestedAgentId);
         //fetch result:
         let result = await getConnectionTestResultAsync(testId);
@@ -127,16 +121,63 @@ export async function testConnectionAsync(connectionName:string):Promise<boolean
         }
     }
     catch(error){
-        console.log(error);
-        tl.setResult(tl.TaskResult.Failed, `Unable to test connection named:${connectionName}`);
-        tl.error(error);
+        uerror.CatchAxiosError(error);
+        tl.setResult(tl.TaskResult.Failed, error);
         process.exit(1);
     }
 }
 
-// testConnectionAsync(testConnectionName).then((x) => {
-// console.log("FINAL RESULT", x);
-// });
+async function getEntities(connectionName:string, offset:number, fetch:number):Promise<Array<string>>{
+    let connection = await getConnectionByNameAsync(connectionName);
+    let agentId = connection.lastTestedAgentId;
+
+    let uri:string = `${scribe_baseUrl}/${scribe_organizationId}/connections/${connection.id}/entitynames?agentId=${agentId}&offset=${offset}&limit=${fetch}`;
+
+    try{
+        console.log(`INFO: Getting entities for connection "${connectionName}"...`);
+        console.log("INFO: fetch, offset", fetch, offset);
+
+        const response = await axios({
+            method: "GET",
+            url: uri,
+            auth: {
+                username: scribe_user,
+                password: scribe_password
+            }
+        });
+        while(response.status == 404){
+            console.log(`Loading metadata...`);
+            sleep(2000);
+        }
+        return response.data;
+    }
+    catch(error) {
+        uerror.CatchAxiosError(error);
+        tl.setResult(tl.TaskResult.Failed, error);
+        process.exit(1);
+    };
+}
+
+export async function getConnectionEntitiesAsync(connectionName:string):Promise<Array<string>>{
+    let offset = 0, fetch = 500;
+    let result:Array<string> = await getEntities(connectionName, offset, fetch);
+    
+    while(1 == 1){
+        console.log("Current Entities: ", result.length);
+        let entities = await getEntities(connectionName, offset, fetch);
+        if(entities.length > 0){
+            console.log(`INFO: Entities received: `, entities.length);
+            result = result.concat(entities);
+            offset += entities.length;
+        }else{
+            console.log("INFO: No more entities to retrieve");
+            break;
+        }
+    }
+    console.log("INFO: Total number of entites ", result.length);
+    console.log(JSON.stringify(result));
+    return result;
+}
 
 export class ConnectionInfo {
     id!:string;

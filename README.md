@@ -2,6 +2,7 @@
 An extension for deploying scribe solutions via Azure Dev Ops Release pipelines
 
 ## Package extension
+
 `tfx extension create --manifest-globs vss-extension.json`
 
 ## References
@@ -15,6 +16,8 @@ An extension for deploying scribe solutions via Azure Dev Ops Release pipelines
  > [Azure Pipelines Task Library Typescript API](https://github.com/microsoft/azure-pipelines-task-lib/blob/master/node/docs/azure-pipelines-task-lib.md)
 
  > [How to Add a build or release task](https://docs.microsoft.com/en-us/azure/devops/extend/develop/add-build-task?view=azure-devops)
+
+ > [Publish Extension Marketplace](https://marketplace.visualstudio.com/manage/publishers)
 
  ## Create Environment Variables
  > `export INPUT_SCRIBEUSERNAME=****`

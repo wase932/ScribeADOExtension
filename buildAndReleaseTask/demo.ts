@@ -1,30 +1,30 @@
+// let main = [
+//     'account',
+//     'accountleads',
+//     'aciviewmapper',
+//     'actioncard',
+//     'actioncardusersettings',
+//     'actioncarduserstate',
+//     'activitymimeattachment',
+//     'activityparty',
+//     'activitypointer',
+//     'advancedsimilarityrule',
+//     'adx_accesscontrolrule_publishingstate',
+//     'adx_accountcontentaccesslevel'
+// ]
 
+// let subset = [
+//     'account',
+//     'accountleads',
+//     'aciviewmapper'
+// ]
+// let checkEntityList = (main:Array<string>, target:Array<string>) => target.every(v => main.includes(v));
+// let result = checkEntityList(main, subset);
+// console.log(result);
+
+
+/***
 let sleep = (ms:number) => new Promise((r, j)=>setTimeout(r, ms));
-
-
-// console.log("begin");
-// step1();
-// step2();
-// console.log("all steps started");
-
-// // ----------------------------------------------
-
-// async function step1() {
-
-// console.log("starting step 1");
-// await sleep(10000);
-// console.log("step 1 handled");
-// } // step1()
-
-// // ----------------------------------------------
-
-// async function step2() {
-
-// console.log("starting step 2");
-// await sleep(5000);
-// console.log("step 2 handled");
-// } // step2()
-
 
 async function func1():Promise<number>{
     console.log("STARTED: ONE...");
@@ -65,3 +65,5 @@ async function func3():Promise<number>{
 let x = func3().then((x) => {
     console.log("FINAL RESULT ",x);
 });
+
+***/

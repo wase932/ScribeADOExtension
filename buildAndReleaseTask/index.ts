@@ -1,55 +1,39 @@
 import tl = require('azure-pipelines-task-lib/task');
 // import * as utility from './utility/input';
 import  { getInput }  from './utility/input';
-import *  as conn from './connection/connection';
+import *  as conn from './connection';
+import *  as sol from './solution';
+
 
 enum actionOptions{ testConnection = "testConnection",
                     createSolution = "createSolution",
                     deleteSolution = "deleteSolution",
-                    getConnectionEntities = "getConnectionEntities" };
+                    getConnectionEntities = "getConnectionEntities",
+                    startSolution = "startSolution"
+                };
 
-const scribe_user = getInput("scribeUsername", true);
-const scribe_password = getInput("scribePassword", true);
-const scribe_organizationId = Number(getInput("scribeOrganizationId", true));
-const scribe_baseUrl = getInput("scribeBaseurl", true);
 const scribeAction = getInput("scribeAction", true);
-const sourceConnectionName = getInput("sourceConnectionName", false);
-const targetConnectionName = getInput("targetConnectionName", false);
-const testConnectionName = getInput("testConnectionName", false);
+const connectionName = getInput("connectionName", false);
+const solutionName = getInput("solutionName", false);
 
 const determineAction = async function  (action: string){
     switch (action) {
         case actionOptions.testConnection:
-            conn.testConnectionAsync(testConnectionName).then((x) => {
-                    if(x){
-                     tl.setResult(tl.TaskResult.Succeeded, `The ${testConnectionName} connection passed test.` );   
-                    }else{
-                        tl.setResult(tl.TaskResult.Failed, `The ${testConnectionName} connection failed test.` );
-                    }
-                });
+            conn.testConnectionAsync(connectionName);
             break;
         case actionOptions.createSolution:
-            createSolution();
+            sol.createSolution();
             break;
         case actionOptions.deleteSolution:
-            deleteSolution();
+            sol.deleteSolution(solutionName);
             break;
         case actionOptions.getConnectionEntities:
-            getConnectionEntities();
+            conn.getConnectionEntitiesAsync(connectionName);
+            break;
+        case actionOptions.startSolution:
+            sol.startSolutionByNameAsync(solutionName);
             break;
     }
 }
 
 determineAction(scribeAction);
-
-function createSolution(){
-    console.log("Creating a solution...");
-}
-
-function deleteSolution(){
-    console.log("Deleting a solution...");
-}
-
-function getConnectionEntities(){
-    console.log("Fetching entities of connection...");
-}
