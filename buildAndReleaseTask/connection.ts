@@ -1,20 +1,18 @@
 const axios = require('axios').default;
+import * as _ from './index';
 import tl = require('azure-pipelines-task-lib/task');
-import  { getInput }  from './utility/input';
 import * as uerror from './utility/error';
-import * as agent from './agent';
 
-const scribe_user = getInput("scribeUsername", true);
-const scribe_password = getInput("scribePassword", true);
-const scribe_organizationId = Number(getInput("scribeOrganizationId", true));
-const scribe_baseUrl = getInput("scribeBaseurl", true);
-const connectionName = getInput("connectionName", false);
+// let scribe_user = index.scribe_user;
+// let scribe_password = index.scribe_password;
+// let scribe_organizationId = Number(index.scribe_organizationId);
+// let scribe_baseUrl = index.scribe_baseUrl;
 
 const sleep = (ms:number) => new Promise((r, j)=>setTimeout(r, ms));
 
 export async function startConnectionTestAsync(connectionId:string, agentId:string):Promise<string>{
     console.log("INFO: Testing connection...");
-    const uri:string = scribe_baseUrl+"/"+scribe_organizationId+"/connections/"+connectionId+"/test?agentid="+agentId;
+    const uri:string = _.scribe_baseUrl+"/"+_.scribe_organizationId+"/connections/"+connectionId+"/test?agentid="+agentId;
     console.log("Api path: ", uri);
 
     try {
@@ -22,8 +20,8 @@ export async function startConnectionTestAsync(connectionId:string, agentId:stri
             method: "POST",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         console.log("Response:", response.data);
@@ -37,7 +35,7 @@ export async function startConnectionTestAsync(connectionId:string, agentId:stri
 
 export async function getConnectionTestResultAsync(testId:string, delay:number = 10000): Promise<ConnectionTestResult>{
     console.log("INFO: Fetching connection test result...");
-    const uri:string = scribe_baseUrl+"/"+scribe_organizationId+"/connections/test/"+testId;
+    const uri:string = _.scribe_baseUrl+"/"+_.scribe_organizationId+"/connections/test/"+testId;
     let result = new ConnectionTestResult();
     try{
         await sleep(delay);
@@ -45,8 +43,8 @@ export async function getConnectionTestResultAsync(testId:string, delay:number =
                                     method: "GET",
                                     url: uri,
                                     auth: {
-                                        username: scribe_user,
-                                        password: scribe_password
+                                        username: _.scribe_user,
+                                        password: _.scribe_password
                                     }
                                 });
         console.log("Assigning Response data...");
@@ -73,14 +71,17 @@ export async function getConnectionTestResultAsync(testId:string, delay:number =
 export async function getAllConnectionsAsync(): Promise<Array<ConnectionInfo>>{
     try{
         console.log("INFO: Getting all connections...");
-        const uri:string = scribe_baseUrl+"/"+scribe_organizationId+"/connections";
+        console.log(_.scribe_baseUrl);
+        console.log(_.scribe_organizationId);
+
+        let uri:string = _.scribe_baseUrl+"/"+_.scribe_organizationId+"/connections";
 
         const response = await axios({
             method: "GET",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         return response.data;
@@ -131,7 +132,7 @@ async function getEntities(connectionName:string, offset:number, fetch:number):P
     let connection = await getConnectionByNameAsync(connectionName);
     let agentId = connection.lastTestedAgentId;
 
-    let uri:string = `${scribe_baseUrl}/${scribe_organizationId}/connections/${connection.id}/entitynames?agentId=${agentId}&offset=${offset}&limit=${fetch}`;
+    let uri:string = `${_.scribe_baseUrl}/${_.scribe_organizationId}/connections/${connection.id}/entitynames?agentId=${agentId}&offset=${offset}&limit=${fetch}`;
 
     try{
         console.log(`INFO: Getting entities for connection "${connectionName}"...`);
@@ -141,8 +142,8 @@ async function getEntities(connectionName:string, offset:number, fetch:number):P
             method: "GET",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         while(response.status == 404){

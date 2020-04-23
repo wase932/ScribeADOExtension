@@ -1,26 +1,9 @@
 const axios = require('axios').default;
+import * as _ from './index';
 import tl = require('azure-pipelines-task-lib/task');
-import  { getInput }  from './utility/input';
 import *  as conn from './connection';
 import *  as agt from './agent';
 import * as uerror from './utility/error';
-import { start } from 'repl';
-
-const scribe_user = getInput("scribeUsername", true);
-const scribe_password = getInput("scribePassword", true);
-const scribe_organizationId = Number(getInput("scribeOrganizationId", true));
-const scribe_baseUrl = getInput("scribeBaseurl", true);
-const solutionName = getInput("solutionName", false);
-const agentName = getInput("agentName", false);
-const solutionEnabled:boolean = Boolean(getInput("solutionEnabled", false));
-const sourceConnectionName = getInput("sourceConnectionName", false);
-const targetConnectionName = getInput("targetConnectionName", false);
-const entitySelectionMode = getInput("entitySelectionMode", false); /**Recommended, Selected, All */
-const selectedEntities:Array<string> = JSON.parse(getInput("selectedEntities", false)|| "");
-const solutionDescription = getInput("solutionDescription", false);
-const solutionType = getInput("solutionType", false); /**Replication */
-
-
 
 enum entitySelectionModeOptions {
     Recommended = "Recommended",
@@ -33,15 +16,15 @@ const sleep = (ms:number) => new Promise((r, j)=>setTimeout(r, ms));
 //get all solutions
 export async function getAllSolutionsAsync():Promise<Array<Solution>>{
     console.log("INFO: Retrieving all solutions...");
-    const uri:string = scribe_baseUrl+"/"+scribe_organizationId+"/solutions?limit=500";
+    const uri:string = _.scribe_baseUrl+"/"+_.scribe_organizationId+"/solutions?limit=500";
 
     try {
         const response = await axios({
             method: "GET",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         console.log("Number of solutions found ", response.data.length);
@@ -75,15 +58,15 @@ export async function getSolutionByNameAsync(name:string): Promise<Solution | un
     
 async function prepareSolutionAsync(solutionId:string): Promise<SolutionPrepareStatus>{
     console.log("INFO: Preparing Solution to run...");
-    const uri:string = `${scribe_baseUrl}/${scribe_organizationId}/solutions/${solutionId}/prepare`;
+    const uri:string = `${_.scribe_baseUrl}/${_.scribe_organizationId}/solutions/${solutionId}/prepare`;
 
     try {
         const response = await axios({
             method: "POST",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         console.log("INFO: Started Solution Prep ", response.data);
@@ -97,15 +80,15 @@ async function prepareSolutionAsync(solutionId:string): Promise<SolutionPrepareS
 
 async function getSolutionPrepareResultAsync(solutionId:string, prepareId: string):Promise<SolutionPrepareStatus>{
     console.log("INFO: Fetching result of solution prep...");
-    const uri:string = `${scribe_baseUrl}/${scribe_organizationId}/solutions/${solutionId}/prepare/${prepareId}`;
+    const uri:string = `${_.scribe_baseUrl}/${_.scribe_organizationId}/solutions/${solutionId}/prepare/${prepareId}`;
 
     try {
         const response = await axios({
             method: "POST",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         while(!response.data.isComplete){
@@ -124,36 +107,36 @@ async function getSolutionPrepareResultAsync(solutionId:string, prepareId: strin
 export async function createSolution():Promise<Solution>{
     try{
         //check if solution exists
-        let solution = await getSolutionByNameAsync(solutionName) || new Solution();
+        let solution = await getSolutionByNameAsync(_.solutionName) || new Solution();
         if(solution.replicationSettings == undefined){
             solution.replicationSettings = new ReplicationSettings();
         }
 
         if(solution){ 
-            console.log(`Solution "${solutionName}" exists`);
+            console.log(`Solution "${_.solutionName}" exists`);
         }
         else {
-            console.log(`Solution "${solutionName}" does not exist`);
+            console.log(`Solution "${_.solutionName}" does not exist`);
         }
         
         //get connections:
-        let sourceConn = await conn.getConnectionByNameAsync(sourceConnectionName);
-        let targetConn = await conn.getConnectionByNameAsync(targetConnectionName);
+        let sourceConn = await conn.getConnectionByNameAsync(_.sourceConnectionName);
+        let targetConn = await conn.getConnectionByNameAsync(_.targetConnectionName);
 
         //construct solution object to create
-        let agent = await agt.getAgentByNameAsync(agentName);
+        let agent = await agt.getAgentByNameAsync(_.agentName);
 
-        solution.name = solutionName,
+        solution.name = _.solutionName,
         solution.agentId = agent.id,
-        solution.description = solutionDescription,
+        solution.description = _.solutionDescription,
         solution.connectionIdForSource = sourceConn.id,
         solution.connectionIdForTarget = targetConn.id,
-        solution.solutionType = solutionType,
-        solution.isDisabled = !solutionEnabled,
-        solution.replicationSettings = {selectionType : entitySelectionMode, entities:selectedEntities};
+        solution.solutionType = _.solutionType,
+        solution.isDisabled = !_.solutionEnabled,
+        solution.replicationSettings = {selectionType : _.entitySelectionMode, entities:_.selectedEntities};
         
-        if(entitySelectionMode == entitySelectionModeOptions.Selected){
-            console.log("Entity Selection Mode:", entitySelectionMode);
+        if(_.entitySelectionMode == entitySelectionModeOptions.Selected){
+            console.log("Entity Selection Mode:", _.entitySelectionMode);
         }
 
         //Ajax call to create or update solution:
@@ -164,11 +147,11 @@ export async function createSolution():Promise<Solution>{
         if (solution.id){
             console.log("INFO: Updating Solution...");
             httpMethod = "PUT";
-            uri = `${scribe_baseUrl}/${scribe_organizationId}/solutions/${solution.id}`;
+            uri = `${_.scribe_baseUrl}/${_.scribe_organizationId}/solutions/${solution.id}`;
         }else {
             console.log("INFO: Creating Solution...");
             httpMethod = "POST";
-            uri = `${scribe_baseUrl}/${scribe_organizationId}/solutions`;
+            uri = `${_.scribe_baseUrl}/${_.scribe_organizationId}/solutions`;
         }
 
         try {
@@ -176,15 +159,15 @@ export async function createSolution():Promise<Solution>{
                 method: httpMethod,
                 url: uri,
                 auth: {
-                    username: scribe_user,
-                    password: scribe_password
+                    username: _.scribe_user,
+                    password: _.scribe_password
                 },
                 data: solution
             });
             console.log("Data Sent:", solution);
             console.log("Response Data:", response.data);
 
-            if(solutionEnabled){
+            if(_.solutionEnabled){
             await prepareSolutionAsync(response.data.id);
             await startSolutionByIdAsync(response.data.id);
         }
@@ -212,15 +195,15 @@ export async function deleteSolution(name:string):Promise<boolean>{
         process.exit(0);
     }
 
-    const uri:string = `${scribe_baseUrl}/${scribe_organizationId}/solutions/${solution.id}`;
+    const uri:string = `${_.scribe_baseUrl}/${_.scribe_organizationId}/solutions/${solution.id}`;
 
     try {
         let response = await axios({
             method: "DELETE",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         console.log("Status ", response.status);
@@ -239,15 +222,15 @@ export async function startSolutionByIdAsync(solutionId:string, attempts:number 
     await sleep(5000);
     //Try again...
     let i:number = 1;
-    const uri:string = `${scribe_baseUrl}/${scribe_organizationId}/solutions/${solutionId}/start`;
+    const uri:string = `${_.scribe_baseUrl}/${_.scribe_organizationId}/solutions/${solutionId}/start`;
 
     try {
         let response = await axios({
             method: "POST",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         console.log("Status ", response.status);
@@ -258,8 +241,7 @@ export async function startSolutionByIdAsync(solutionId:string, attempts:number 
             await startSolutionByIdAsync(solutionId, i)
         }
         uerror.CatchAxiosError(error);
-        tl.setResult(tl.TaskResult.Failed, error);
-        process.exit(1);
+        return false;
     }
 }
 

@@ -8,26 +8,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios = require('axios').default;
+const _ = __importStar(require("./index"));
 const tl = require("azure-pipelines-task-lib/task");
-const input_1 = require("./utility/input");
 const uerror = __importStar(require("./utility/error"));
-const scribe_user = input_1.getInput("scribeUsername", true);
-const scribe_password = input_1.getInput("scribePassword", true);
-const scribe_organizationId = Number(input_1.getInput("scribeOrganizationId", true));
-const scribe_baseUrl = input_1.getInput("scribeBaseurl", true);
-const connectionName = input_1.getInput("connectionName", false);
+// let scribe_user = index.scribe_user;
+// let scribe_password = index.scribe_password;
+// let scribe_organizationId = Number(index.scribe_organizationId);
+// let scribe_baseUrl = index.scribe_baseUrl;
 const sleep = (ms) => new Promise((r, j) => setTimeout(r, ms));
 async function startConnectionTestAsync(connectionId, agentId) {
     console.log("INFO: Testing connection...");
-    const uri = scribe_baseUrl + "/" + scribe_organizationId + "/connections/" + connectionId + "/test?agentid=" + agentId;
+    const uri = _.scribe_baseUrl + "/" + _.scribe_organizationId + "/connections/" + connectionId + "/test?agentid=" + agentId;
     console.log("Api path: ", uri);
     try {
         const response = await axios({
             method: "POST",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         console.log("Response:", response.data);
@@ -42,7 +41,7 @@ async function startConnectionTestAsync(connectionId, agentId) {
 exports.startConnectionTestAsync = startConnectionTestAsync;
 async function getConnectionTestResultAsync(testId, delay = 10000) {
     console.log("INFO: Fetching connection test result...");
-    const uri = scribe_baseUrl + "/" + scribe_organizationId + "/connections/test/" + testId;
+    const uri = _.scribe_baseUrl + "/" + _.scribe_organizationId + "/connections/test/" + testId;
     let result = new ConnectionTestResult();
     try {
         await sleep(delay);
@@ -50,8 +49,8 @@ async function getConnectionTestResultAsync(testId, delay = 10000) {
             method: "GET",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         console.log("Assigning Response data...");
@@ -76,13 +75,15 @@ exports.getConnectionTestResultAsync = getConnectionTestResultAsync;
 async function getAllConnectionsAsync() {
     try {
         console.log("INFO: Getting all connections...");
-        const uri = scribe_baseUrl + "/" + scribe_organizationId + "/connections";
+        console.log(_.scribe_baseUrl);
+        console.log(_.scribe_organizationId);
+        let uri = _.scribe_baseUrl + "/" + _.scribe_organizationId + "/connections";
         const response = await axios({
             method: "GET",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         return response.data;
@@ -135,7 +136,7 @@ exports.testConnectionAsync = testConnectionAsync;
 async function getEntities(connectionName, offset, fetch) {
     let connection = await getConnectionByNameAsync(connectionName);
     let agentId = connection.lastTestedAgentId;
-    let uri = `${scribe_baseUrl}/${scribe_organizationId}/connections/${connection.id}/entitynames?agentId=${agentId}&offset=${offset}&limit=${fetch}`;
+    let uri = `${_.scribe_baseUrl}/${_.scribe_organizationId}/connections/${connection.id}/entitynames?agentId=${agentId}&offset=${offset}&limit=${fetch}`;
     try {
         console.log(`INFO: Getting entities for connection "${connectionName}"...`);
         console.log("INFO: fetch, offset", fetch, offset);
@@ -143,8 +144,8 @@ async function getEntities(connectionName, offset, fetch) {
             method: "GET",
             url: uri,
             auth: {
-                username: scribe_user,
-                password: scribe_password
+                username: _.scribe_user,
+                password: _.scribe_password
             }
         });
         while (response.status == 404) {

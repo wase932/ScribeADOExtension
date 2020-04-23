@@ -12,9 +12,21 @@ enum actionOptions{ testConnection = "testConnection",
                     startSolution = "startSolution"
                 };
 
-const scribeAction = getInput("scribeAction", true);
-const connectionName = getInput("connectionName", false);
-const solutionName = getInput("solutionName", false);
+export const scribeAction = getInput("scribeAction", true);
+export const connectionName = getInput("connectionName", false);
+export const solutionName = getInput("solutionName", false);
+export const scribe_user = getInput("scribeUsername", true);
+export const scribe_password = getInput("scribePassword", true);
+export const scribe_organizationId = Number(getInput("scribeOrganizationId", true));
+export const scribe_baseUrl = getInput("scribeBaseurl", true);
+export const agentName = getInput("agentName", false);
+export const solutionEnabled:boolean = Boolean(getInput("solutionEnabled", false));
+export const sourceConnectionName = getInput("sourceConnectionName", false);
+export const targetConnectionName = getInput("targetConnectionName", false);
+export const entitySelectionMode = getInput("entitySelectionMode", false); /**Recommended, Selected, All */
+export const selectedEntities:Array<string> = JSON.parse(getInput("selectedEntities", false)|| "");
+export const solutionDescription = getInput("solutionDescription", false);
+export const solutionType = getInput("solutionType", false); /**Replication */
 
 const determineAction = async function  (action: string){
     switch (action) {
@@ -31,7 +43,11 @@ const determineAction = async function  (action: string){
             conn.getConnectionEntitiesAsync(connectionName);
             break;
         case actionOptions.startSolution:
-            sol.startSolutionByNameAsync(solutionName);
+            let StartSolresult = await sol.startSolutionByNameAsync(solutionName);
+            if(!StartSolresult){
+                tl.setResult(tl.TaskResult.Failed, "Failed to start Solution: " + solutionName);
+                process.exit(1);
+            }
             break;
     }
 }
