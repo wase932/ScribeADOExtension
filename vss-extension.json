@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "scribe-solution-deployment",
     "publisher": "ToluAdepoju",
-    "version": "1.1.23",
+    "version": "1.1.24",
     "name": "Scribe Solution Deployment",
     "description": "Deployment of Solutions for Tibco Scribe ",
     "public": false,

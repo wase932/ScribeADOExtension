@@ -2,6 +2,7 @@
 An extension for deploying scribe solutions via Azure Dev Ops Release pipelines
 
 ## Package extension
+`cd buildandreleasetask && tsc && cd ..`
 
 `tfx extension create --manifest-globs vss-extension.json`
 
@@ -20,16 +21,32 @@ An extension for deploying scribe solutions via Azure Dev Ops Release pipelines
  > [Publish Extension Marketplace](https://marketplace.visualstudio.com/manage/publishers)
 
  ## Create Environment Variables
- > `export INPUT_SCRIBEUSERNAME=****`
 
- > `export INPUT_SCRIBEPASSWORD=****`
+> INPUT_SCRIBEORGANIZATIONID=***
 
- > `export INPUT_SCRIBEORGANIZATIONID=****`
+> INPUT_SCRIBEBASEURL=https://api.scribesoft.com/v1/orgs
 
- > `export INPUT_SCRIBEBASEURL=****`
+> INPUT_SCRIBEUSERNAME=***
 
- > `export INPUT_SCRIBEACTION=****`
+> INPUT_SCRIBEPASSWORD=***
 
- > `export INPUT_SOURCECONNECTIONNAME=****`
+> INPUT_SCRIBEACTION=***
 
- > `export INPUT_TARGETCONNECTIONNAME=****`
+> INPUT_SOLUTIONNAME=***
+
+> INPUT_SOLUTIONDESCRIPTION=***
+
+> INPUT_SOURCECONNECTIONNAME=***
+
+> INPUT_TARGETCONNECTIONNAME=***
+
+> INPUT_AGENTNAME=***
+
+> INPUT_SELECTEDENTITIES=***
+
+> INPUT_SOLUTIONTYPE=***
+
+> INPUT_ENTITYSELECTIONMODE=***
+
+> INPUT_CONNECTIONNAME=***
+
