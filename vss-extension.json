@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "scribe-solution-deployment",
     "publisher": "ToluAdepoju",
-    "version": "1.2.8",
+    "version": "1.2.10",
     "name": "Scribe Solution Deployment",
     "description": "Facilitates deployment of scribe solutions.",
     "public": true,
@@ -28,53 +28,26 @@
         }
     },
     "links": {
+        "learn": {
+            "uri": "https://marketplace.visualstudio.com/items?itemName=ToluAdepoju.scribe-solution-deployment"
+        },
         "home": {
-            "uri": "https://www.fabrikam-fiber-inc.com"
+            "uri": "https://marketplace.visualstudio.com/items?itemName=ToluAdepoju.scribe-solution-deployment"
         },
         "getstarted": {
-            "uri": "https://www.fabrikam-fiber-inc.com/help/getstarted"
-        },
-        "learn": {
-            "uri": "https://www.fabrikam-fiber-inc.com/features"
-        },
-        "support": {
-            "uri": "https://www.fabrikam-fiber-inc.com/support"
+            "uri": "https://marketplace.visualstudio.com/items?itemName=ToluAdepoju.scribe-solution-deployment"
         },
         "repository": {
-            "uri": "https://github.com/fabrikam-fiber-inc/tools"
+            "uri": "https://github.com/wase932/ScribeADOExtension"
         },
         "issues": {
-            "uri": "https://github.com/fabrikam-fiber-inc/tools/issues"
+            "uri": "https://github.com/wase932/ScribeADOExtension/issues"
         }
     },
     "repository": {
         "type": "git",
-        "uri": "https://github.com/fabrikam-fiber-inc/tools"
+        "uri": "https://github.com/wase932/"
     },
-    "badges": [
-        {
-            "href": "https://travis.ci/fabrikam-fiber-inc/myextension",
-            "uri": "https://travis.ci/fabrikam-fiber-inc/myextension.svg?branch=master",
-            "description": "TravisCI build for the project"
-        },
-        {
-            "href": "https://ci.appveyor.com/projects/fabrikam-fiber-inc/myextension",
-            "uri": "https://ci.appveyor.com/api/projects/status/vlg2sgs2y7tsdxpj4c?svg=true",
-            "description": "AppVeyor build for the project"
-        }
-    ],
-    "branding": {
-        "color": "rgb(34, 34, 34)",
-        "theme": "dark"
-    },
-    "screenshots": [
-        {
-            "path": "screenshots/screen1.png"
-        },
-        {
-            "path": "screenshots/screen2.png"
-        }
-    ],
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
