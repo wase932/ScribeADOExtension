@@ -165,7 +165,8 @@ async function createSolution() {
             });
             console.log("Data Sent:", solution);
             console.log("Response Data:", response.data);
-            if (_.solutionEnabled) {
+            //if input startSolutionAfterCreateOrUpdate is checked, start the solution
+            if (Boolean(_.startSolutionAfterCreateOrUpdate == "true")) {
                 await prepareSolutionAsync(response.data.id);
                 await startSolutionByIdAsync(response.data.id);
             }

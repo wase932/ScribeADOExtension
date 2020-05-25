@@ -4,6 +4,7 @@ import tl = require('azure-pipelines-task-lib/task');
 import *  as conn from './connection';
 import *  as agt from './agent';
 import * as uerror from './utility/error';
+import * as sch from './schedule';
 
 enum entitySelectionModeOptions {
     Recommended = "Recommended",
@@ -167,10 +168,12 @@ export async function createSolution():Promise<Solution>{
             console.log("Data Sent:", solution);
             console.log("Response Data:", response.data);
 
-            if(_.solutionEnabled){
-            await prepareSolutionAsync(response.data.id);
-            await startSolutionByIdAsync(response.data.id);
-        }
+            //if input startSolutionAfterCreateOrUpdate is checked, start the solution
+            if(Boolean(_.startSolutionAfterCreateOrUpdate == "true")){
+                await prepareSolutionAsync(response.data.id);
+                await startSolutionByIdAsync(response.data.id);
+            }
+
             return response.data;
 
         } catch (error) {
