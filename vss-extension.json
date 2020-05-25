@@ -2,12 +2,12 @@
     "manifestVersion": 1,
     "id": "scribe-solution-deployment",
     "publisher": "ToluAdepoju",
-    "version": "1.2.10",
+    "version": "1.2.12",
     "name": "Scribe Solution Deployment",
     "description": "Facilitates deployment of scribe solutions.",
     "public": true,
     "icons": {
-        "default": "images/extension-icon.png"
+        "default": "images/icon.png"
     },
     "tags": [
         "scribe",
@@ -16,9 +16,9 @@
         "Dynamics CE"
     ],
     "galleryFlags": [
-        "public" 
+        "" 
     ],
-    "categories": ["Azure Repos"],
+    "categories": ["Azure Pipelines"],
     "content": {
         "details": {
             "path": "overview.md"
