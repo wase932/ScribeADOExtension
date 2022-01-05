@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/wase932/ScribeADOExtension#readme",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "azure-pipelines-task-lib": "^2.9.3"
   },
   "devDependencies": {
