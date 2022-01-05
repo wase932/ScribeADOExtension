@@ -1,5 +1,6 @@
 # ScribeADOExtension
-An extension for deploying scribe solutions via Azure Dev Ops Release pipelines
+An extension for deploying scribe solutions via Azure Dev Ops Release pipelines.
+The extension can be installed via the marketplace: [scribe-solution-deployment](https://marketplace.visualstudio.com/items?itemName=ToluAdepoju.scribe-solution-deployment)
 
 ## Package extension
 `cd buildandreleasetask && tsc && cd ..`
